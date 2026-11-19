@@ -1,4 +1,5 @@
 const Food = require("../models/Food");
+const { getIO } = require("../socket");
 
 exports.createFood = async (req, res) => {
     try {
@@ -19,6 +20,8 @@ exports.createFood = async (req, res) => {
             address,
             location: { type: "Point", coordinates: [Number(lng), Number(lat)] },
         });
+        const populated = await food.populate("donor", "name");
+        getIO().to("role:ngo").emit("food:new", populated);
         res.status(201).json(food);
     } catch (err) {
         res.status(400).json({ message: err.message });
@@ -66,6 +69,11 @@ exports.acceptFood = async (req, res) => {
     if (!food) {
         return res.status(409).json({ message: "Ye khana ab available nahi hai (kisi aur NGO ne le liya ya expire ho gaya)" });
     }
+    const full = await food.populate([
+        { path: "donor", select: "name phone" },
+        { path: "acceptedBy", select: "orgName name" },
+    ]);
+    getIO().to("role:ngo").to(`user:${food.donor._id}`).emit("food:updated", full);
     res.json(food);
 };
 
@@ -81,5 +89,10 @@ exports.updateStatus = async (req, res) => {
 
     food.status = status;
     await food.save();
+    const full = await food.populate([
+        { path: "donor", select: "name phone" },
+        { path: "acceptedBy", select: "orgName name" },
+    ]);
+    getIO().to("role:ngo").to(`user:${food.donor._id}`).emit("food:updated", full);
     res.json(food);
 };

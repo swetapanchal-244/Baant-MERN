@@ -10,6 +10,9 @@ import { getNearby, acceptFood } from "../../services/foodService";
 import { getError } from "../../services/api";
 import { NGO_CENTER } from "../../data/mockNearby";
 import { distanceKm } from "../../utils/distance";
+import toast from "react-hot-toast";
+import useSocket from "../../hooks/useSocket";
+import { normalize } from "../../services/foodService";
 
 export default function NearbyFood() {
     const navigate = useNavigate();
@@ -35,6 +38,23 @@ export default function NearbyFood() {
         }, 300); // slider chalate waqt har step pe request na jaye
         return () => clearTimeout(t);
     }, [center.lat, center.lng, radius]);
+
+    useSocket({
+        "food:new": (raw) => {
+            const f = normalize(raw);
+            const distance = distanceKm(center.lat, center.lng, f.lat, f.lng);
+            if (distance <= radius) {
+                setFoods((prev) => [{ ...f, distance }, ...prev]);
+                toast.success(`Naya khana: ${f.title} (${distance.toFixed(1)} km)`);
+            }
+        },
+        "food:updated": (raw) => {
+            // kisi aur NGO ne le liya to list se hata do
+            if (raw.status !== "available") {
+                setFoods((prev) => prev.filter((f) => f.id !== raw._id));
+            }
+        },
+    });
 
     const accept = async (id) => {
         try {

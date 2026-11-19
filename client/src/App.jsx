@@ -12,6 +12,7 @@ import DonorDashboard from "./pages/donor/DonorDashboard";
 import AddFood from "./pages/donor/AddFood";
 import NearbyFood from "./pages/ngo/NearbyFood";
 import MyPickups from "./pages/ngo/Mypickups";
+import { Toaster } from "react-hot-toast";
 
 function Layout() {
   const { pathname } = useLocation();
@@ -62,6 +63,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <Toaster position="top-right" toastOptions={{ style: { borderRadius: "16px", background: "#fff", color: "#2B3A33" } }} />
         <Layout />
       </AuthProvider>
     </BrowserRouter>

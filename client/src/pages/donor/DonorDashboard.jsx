@@ -8,6 +8,9 @@ import StatusBadge from "../../components/food/StatusBadge";
 import Button from "../../components/common/Button";
 import { useAuth } from "../../context/AuthContext";
 import { getMyFood } from "../../services/foodService";
+import toast from "react-hot-toast";
+import useSocket from "../../hooks/useSocket";
+import { normalize } from "../../services/foodService";
 
 export default function DonorDashboard() {
     const { user } = useAuth();
@@ -16,6 +19,19 @@ export default function DonorDashboard() {
     useEffect(() => {
         getMyFood().then(setDonations).catch(console.error);
     }, []);
+
+    useSocket({
+        "food:updated": (raw) => {
+            const f = normalize(raw);
+            setDonations((prev) => prev.map((d) => (d.id === f.id ? f : d)));
+            const msg = {
+                accepted: `${f.ngo} ne aapka khana accept kiya`,
+                picked: `${f.ngo} ne khana pickup kar liya`,
+                delivered: `Khana deliver ho gaya. Shukriya!`,
+            }[f.status];
+            if (msg) toast.success(msg);
+        },
+    });
 
     const total = donations.length;
     const meals = donations.reduce((sum, d) => sum + d.quantity, 0);
