@@ -8,11 +8,17 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import DonorDashboard from "./pages/donor/DonorDashboard";
 import AddFood from "./pages/donor/AddFood";
+import NearbyFood from "./pages/ngo/NearbyFoos";
+import MyPickups from "./pages/ngo/Mypickups";
+import { FoodProvider } from "./context/FoodContext";
 
 function Layout() {
   const { pathname } = useLocation();
   const hideChrome =
-    pathname === "/login" || pathname === "/register" || pathname.startsWith("/donor");
+    pathname === "/login" ||
+    pathname === "/register" ||
+    pathname.startsWith("/donor") ||
+    pathname.startsWith("/ngo");
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -27,6 +33,8 @@ function Layout() {
         <Route path="/register" element={<Register />} />
         <Route path="/donor" element={<DonorDashboard />} />
         <Route path="/donor/add" element={<AddFood />} />
+        <Route path="/ngo" element={<NearbyFood />} />
+        <Route path="/ngo/pickups" element={<MyPickups />} />
       </Routes>
       {!hideChrome && <Footer />}
     </>
@@ -50,7 +58,9 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <Layout />
+      <FoodProvider>
+        <Layout />
+      </FoodProvider>
     </BrowserRouter>
   );
 }

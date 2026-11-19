@@ -1,19 +1,26 @@
-import { NavLink, Link } from "react-router-dom";
-import { HeartHandshake, LayoutDashboard, PlusCircle, LogOut } from "lucide-react";
+import { NavLink, Link, useLocation } from "react-router-dom";
+import { HeartHandshake, LayoutDashboard, PlusCircle, LogOut, MapPin, Truck } from "lucide-react";
 
-const links = [
+const donorLinks = [
     { to: "/donor", label: "Dashboard", icon: LayoutDashboard, end: true },
     { to: "/donor/add", label: "Naya khana", icon: PlusCircle },
+];
+
+const ngoLinks = [
+    { to: "/ngo", label: "Nearby khana", icon: MapPin, end: true },
+    { to: "/ngo/pickups", label: "Meri pickups", icon: Truck },
 ];
 
 const linkClass = ({ isActive }) =>
     `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition ${isActive ? "bg-mint text-sage-dark" : "text-muted hover:bg-cream hover:text-ink"
     }`;
 
-export default function DashboardLayout({ children }) {
+export default function DashboardLayout({ children, wide = false }) {
+    const { pathname } = useLocation();
+    const links = pathname.startsWith("/ngo") ? ngoLinks : donorLinks;
+
     return (
         <div className="min-h-screen lg:flex">
-            {/* Desktop sidebar */}
             <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-sand bg-white p-5 lg:flex">
                 <Link to="/" className="mb-8 flex items-center gap-2">
                     <span className="grid h-9 w-9 place-items-center rounded-xl bg-sage text-white">
@@ -35,11 +42,10 @@ export default function DashboardLayout({ children }) {
                 </Link>
             </aside>
 
-            <main className="flex-1 px-5 pb-28 pt-8 lg:px-10 lg:pb-10">
-                <div className="mx-auto max-w-4xl">{children}</div>
+            <main className="min-w-0 flex-1 px-5 pb-28 pt-8 lg:px-10 lg:pb-10">
+                <div className={`mx-auto ${wide ? "max-w-6xl" : "max-w-4xl"}`}>{children}</div>
             </main>
 
-            {/* Mobile bottom bar */}
             <nav className="fixed inset-x-0 bottom-0 z-40 flex justify-around border-t border-sand bg-white/90 p-2 backdrop-blur lg:hidden">
                 {links.map((l) => (
                     <NavLink
