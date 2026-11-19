@@ -4,10 +4,12 @@ const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db");
 const { initSocket } = require("./socket");
+const startExpireJob = require("./jobs/expireFood");
 
 const app = express();
 const server = http.createServer(app);
 connectDB();
+startExpireJob();
 initSocket(server);
 
 app.use(cors({ origin: process.env.CLIENT_URL }));
