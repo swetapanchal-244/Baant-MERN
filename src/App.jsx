@@ -3,13 +3,16 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Lenis from "lenis";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
-import Landing from "./pages/landing";
+import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import DonorDashboard from "./pages/donor/DonorDashboard";
+import AddFood from "./pages/donor/AddFood";
 
 function Layout() {
   const { pathname } = useLocation();
-  const isAuthPage = pathname === "/login" || pathname === "/register";
+  const hideChrome =
+    pathname === "/login" || pathname === "/register" || pathname.startsWith("/donor");
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -17,13 +20,15 @@ function Layout() {
 
   return (
     <>
-      {!isAuthPage && <Navbar />}
+      {!hideChrome && <Navbar />}
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/donor" element={<DonorDashboard />} />
+        <Route path="/donor/add" element={<AddFood />} />
       </Routes>
-      {!isAuthPage && <Footer />}
+      {!hideChrome && <Footer />}
     </>
   );
 }
