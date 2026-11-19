@@ -3,7 +3,7 @@ const Food = require("../models/Food");
 const { getIO } = require("../socket");
 
 module.exports = function startExpireJob() {
-    // Har minute chalega
+    
     cron.schedule("* * * * *", async () => {
         try {
             const stale = await Food.find({

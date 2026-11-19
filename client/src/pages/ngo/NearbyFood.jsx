@@ -35,7 +35,7 @@ export default function NearbyFood() {
                     setFoods(list.map((f) => ({ ...f, distance: distanceKm(center.lat, center.lng, f.lat, f.lng) })))
                 )
                 .catch((e) => setError(getError(e)));
-        }, 300); // slider chalate waqt har step pe request na jaye
+        }, 300);
         return () => clearTimeout(t);
     }, [center.lat, center.lng, radius]);
 
@@ -49,7 +49,7 @@ export default function NearbyFood() {
             }
         },
         "food:updated": (raw) => {
-            // kisi aur NGO ne le liya to list se hata do
+           
             if (raw.status !== "available") {
                 setFoods((prev) => prev.filter((f) => f.id !== raw._id));
             }

@@ -1,4 +1,3 @@
-// Haversine formula: do coordinates ke beech km me distance
 export function distanceKm(lat1, lng1, lat2, lng2) {
     const R = 6371;
     const toRad = (d) => (d * Math.PI) / 180;

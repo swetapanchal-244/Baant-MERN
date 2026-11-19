@@ -9,7 +9,6 @@ exports.initSocket = (httpServer) => {
         cors: { origin: process.env.CLIENT_URL },
     });
 
-    // Connect hone se pehle token verify
     io.use(async (socket, next) => {
         try {
             const decoded = jwt.verify(socket.handshake.auth.token, process.env.JWT_SECRET);

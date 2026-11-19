@@ -1,4 +1,3 @@
-// Apne shehar ke coordinates daal sakte ho (Google Maps pe right-click karke copy karo)
 export const NGO_CENTER = { lat: 28.6139, lng: 77.209 };
 
 export const nearbyFood = [

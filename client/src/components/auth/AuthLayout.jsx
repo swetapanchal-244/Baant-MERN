@@ -5,7 +5,7 @@ import { HeartHandshake, Quote } from "lucide-react";
 export default function AuthLayout({ title, subtitle, children }) {
     return (
         <div className="grid min-h-screen lg:grid-cols-2">
-            {/* Left: decorative panel */}
+          
             <div className="relative hidden overflow-hidden bg-sage p-12 text-white lg:flex lg:flex-col lg:justify-between">
                 <div className="absolute -right-20 -top-20 h-80 w-80 animate-blob rounded-full bg-white/10 blur-2xl" />
                 <div className="absolute -bottom-24 -left-16 h-96 w-96 animate-blob rounded-full bg-peach/30 blur-3xl [animation-delay:-6s]" />
@@ -33,7 +33,6 @@ export default function AuthLayout({ title, subtitle, children }) {
                 <p className="relative text-sm text-white/60">© 2026 Baant</p>
             </div>
 
-            {/* Right: form */}
             <div className="flex items-center justify-center px-5 py-12">
                 <motion.div
                     initial={{ opacity: 0, y: 24 }}

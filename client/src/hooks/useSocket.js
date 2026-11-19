@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react";
 import { connectSocket } from "../services/socket";
 
-// handlers: { "food:new": fn, "food:updated": fn }
 export default function useSocket(handlers) {
     const ref = useRef(handlers);
     ref.current = handlers;

@@ -6,6 +6,8 @@ import StatusTimeline from "../../components/food/StatusTimeline";
 import Button from "../../components/common/Button";
 import { getPickups, setStatus } from "../../services/foodService";
 import { getError } from "../../services/api";
+import WeeklyChart from "../../components/dashboard/WeeklyChart";
+import { getNgoStats } from "../../services/statsService";
 
 const nextAction = {
     accepted: { label: "Pickup ho gaya", next: "picked" },
@@ -15,6 +17,11 @@ const nextAction = {
 export default function MyPickups() {
     const [mine, setMine] = useState([]);
     const [error, setError] = useState("");
+    const [stats, setStats] = useState(null);
+
+    useEffect(() => {
+        getNgoStats().then(setStats).catch(console.error);
+    }, []);
 
     useEffect(() => {
         getPickups().then(setMine).catch((e) => setError(getError(e)));
@@ -24,6 +31,7 @@ export default function MyPickups() {
         try {
             await setStatus(id, next);
             setMine((prev) => prev.map((f) => (f.id === id ? { ...f, status: next } : f)));
+            getNgoStats().then(setStats);
         } catch (e) {
             setError(getError(e));
         }
@@ -34,6 +42,19 @@ export default function MyPickups() {
             <h1 className="text-3xl font-extrabold">Meri pickups</h1>
             <p className="mb-8 mt-1 text-muted">Accept kiya hua khana yahan track karo.</p>
 
+            {stats && (
+                <div className="mb-8 grid gap-4 lg:grid-cols-3">
+                    <div className="rounded-3xl bg-sage p-6 text-white">
+                        <p className="text-sm text-white/80">Total meals deliver kiye</p>
+                        <p className="font-heading text-5xl font-extrabold">{stats.meals}</p>
+                        <p className="mt-2 text-sm text-white/80">{stats.pickups} pickups complete</p>
+                    </div>
+                    <div className="lg:col-span-2">
+                        <WeeklyChart data={stats.weekly} title="Is hafte deliver hue meals" />
+                    </div>
+                </div>
+            )}
+            
             {error && <p className="mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-600">{error}</p>}
 
             {mine.length === 0 ? (

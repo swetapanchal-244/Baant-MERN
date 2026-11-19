@@ -47,7 +47,7 @@ function Layout() {
 
 export default function App() {
   useEffect(() => {
-    const lenis = new Lenis();
+    const lenis = new Lenis({ anchors: true });
     let id;
     const raf = (time) => {
       lenis.raf(time);

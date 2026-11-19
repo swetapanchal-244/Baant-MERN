@@ -2,14 +2,12 @@ import axios from "axios";
 
 const api = axios.create({ baseURL: import.meta.env.VITE_API_URL });
 
-// Har request me token apne aap lag jayega
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem("baant_token");
     if (token) config.headers.Authorization = `Bearer ${token}`;
     return config;
 });
 
-// Token expire ho gaya to logout karke login pe bhejo
 api.interceptors.response.use(
     (res) => res,
     (err) => {

@@ -9,7 +9,6 @@ export function timeLeft(iso) {
     return `${Math.round(mins / 60)} ghante`;
 }
 
-// Backend ka format -> UI ka format
 export const normalize = (f) => ({
     id: f._id,
     title: f.title,

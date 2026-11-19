@@ -3,7 +3,6 @@ import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from "react-le
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-// Default Leaflet marker icon Vite me toot jata hai, isliye custom pin use kar rahe hain
 const pin = (color) =>
     L.divIcon({
         className: "",

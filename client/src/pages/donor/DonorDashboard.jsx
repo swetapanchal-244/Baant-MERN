@@ -11,10 +11,18 @@ import { getMyFood } from "../../services/foodService";
 import toast from "react-hot-toast";
 import useSocket from "../../hooks/useSocket";
 import { normalize } from "../../services/foodService";
+import WeeklyChart from "../../components/dashboard/WeeklyChart";
+import { getDonorStats } from "../../services/statsService";
 
 export default function DonorDashboard() {
     const { user } = useAuth();
     const [donations, setDonations] = useState([]);
+
+    const [weekly, setWeekly] = useState([]);
+
+    useEffect(() => {
+        getDonorStats().then((s) => setWeekly(s.weekly)).catch(console.error);
+    }, []);
 
     useEffect(() => {
         getMyFood().then(setDonations).catch(console.error);
@@ -59,6 +67,10 @@ export default function DonorDashboard() {
                 <StatCard icon={Users} label="Meals diye" value={meals} tint="bg-peach-soft text-peach" />
                 <StatCard icon={CheckCircle2} label="Deliver hue" value={delivered} tint="bg-mint text-sage-dark" />
                 <StatCard icon={Clock} label="Active posts" value={active} tint="bg-peach-soft text-peach" />
+            </div>
+
+            <div className="mb-10">
+                <WeeklyChart data={weekly} title="Is hafte aapne kitne meals diye" />
             </div>
 
             <h2 className="mb-4 text-xl font-bold">Meri donations</h2>
