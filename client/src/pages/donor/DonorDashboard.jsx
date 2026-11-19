@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Plus, Utensils, Users, CheckCircle2, Clock } from "lucide-react";
@@ -5,13 +6,21 @@ import DashboardLayout from "../../components/layout/DashboardLayout";
 import StatCard from "../../components/dashboard/StatCard";
 import StatusBadge from "../../components/food/StatusBadge";
 import Button from "../../components/common/Button";
-import { mockDonations } from "../../data/mockDonations";
+import { useAuth } from "../../context/AuthContext";
+import { getMyFood } from "../../services/foodService";
 
 export default function DonorDashboard() {
-    const total = mockDonations.length;
-    const meals = mockDonations.reduce((sum, d) => sum + d.quantity, 0);
-    const delivered = mockDonations.filter((d) => d.status === "delivered").length;
-    const active = mockDonations.filter((d) => d.status === "available" || d.status === "accepted").length;
+    const { user } = useAuth();
+    const [donations, setDonations] = useState([]);
+
+    useEffect(() => {
+        getMyFood().then(setDonations).catch(console.error);
+    }, []);
+
+    const total = donations.length;
+    const meals = donations.reduce((sum, d) => sum + d.quantity, 0);
+    const delivered = donations.filter((d) => d.status === "delivered").length;
+    const active = donations.filter((d) => d.status === "available" || d.status === "accepted").length;
 
     return (
         <DashboardLayout>
@@ -21,7 +30,7 @@ export default function DonorDashboard() {
                 className="mb-8 flex flex-wrap items-center justify-between gap-4"
             >
                 <div>
-                    <h1 className="text-3xl font-extrabold">Namaste, Sweta 👋</h1>
+                    <h1 className="text-3xl font-extrabold">Namaste, {user?.name?.split(" ")[0]} 👋</h1>
                     <p className="mt-1 text-muted">Aaj kisi ki thaali bharne ka din hai.</p>
                 </div>
                 <Link to="/donor/add">
@@ -38,7 +47,7 @@ export default function DonorDashboard() {
 
             <h2 className="mb-4 text-xl font-bold">Meri donations</h2>
             <div className="space-y-3">
-                {mockDonations.map((d, i) => (
+                {donations.map((d, i) => (
                     <motion.div
                         key={d.id}
                         initial={{ opacity: 0, x: -20 }}
@@ -56,6 +65,12 @@ export default function DonorDashboard() {
                         <StatusBadge status={d.status} />
                     </motion.div>
                 ))}
+
+                {donations.length === 0 && (
+                    <p className="rounded-2xl border border-dashed border-sand bg-white p-8 text-center text-muted">
+                        Abhi koi donation nahi. Pehla khana post karo!
+                    </p>
+                )}
             </div>
         </DashboardLayout>
     );

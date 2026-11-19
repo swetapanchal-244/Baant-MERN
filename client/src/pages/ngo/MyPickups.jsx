@@ -1,9 +1,11 @@
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { MapPin, Users, PackageOpen } from "lucide-react";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import StatusTimeline from "../../components/food/StatusTimeline";
 import Button from "../../components/common/Button";
-import { useFood } from "../../context/FoodContext";
+import { getPickups, setStatus } from "../../services/foodService";
+import { getError } from "../../services/api";
 
 const nextAction = {
     accepted: { label: "Pickup ho gaya", next: "picked" },
@@ -11,13 +13,28 @@ const nextAction = {
 };
 
 export default function MyPickups() {
-    const { foods, updateStatus } = useFood();
-    const mine = foods.filter((f) => ["accepted", "picked", "delivered"].includes(f.status));
+    const [mine, setMine] = useState([]);
+    const [error, setError] = useState("");
+
+    useEffect(() => {
+        getPickups().then(setMine).catch((e) => setError(getError(e)));
+    }, []);
+
+    const advance = async (id, next) => {
+        try {
+            await setStatus(id, next);
+            setMine((prev) => prev.map((f) => (f.id === id ? { ...f, status: next } : f)));
+        } catch (e) {
+            setError(getError(e));
+        }
+    };
 
     return (
         <DashboardLayout>
             <h1 className="text-3xl font-extrabold">Meri pickups</h1>
             <p className="mb-8 mt-1 text-muted">Accept kiya hua khana yahan track karo.</p>
+
+            {error && <p className="mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-600">{error}</p>}
 
             {mine.length === 0 ? (
                 <div className="rounded-3xl border border-dashed border-sand bg-white p-12 text-center">
@@ -52,7 +69,7 @@ export default function MyPickups() {
                                 <StatusTimeline status={f.status} />
 
                                 {action ? (
-                                    <Button className="mt-5 w-full" onClick={() => updateStatus(f.id, action.next)}>
+                                    <Button className="mt-5 w-full" onClick={() => advance(f.id, action.next)}>
                                         {action.label}
                                     </Button>
                                 ) : (

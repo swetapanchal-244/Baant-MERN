@@ -3,14 +3,15 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Lenis from "lenis";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
+import ProtectedRoute from "./components/common/ProtectedRoute";
+import { AuthProvider } from "./context/AuthContext";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import DonorDashboard from "./pages/donor/DonorDashboard";
 import AddFood from "./pages/donor/AddFood";
-import NearbyFood from "./pages/ngo/NearbyFoos";
+import NearbyFood from "./pages/ngo/NearbyFood";
 import MyPickups from "./pages/ngo/Mypickups";
-import { FoodProvider } from "./context/FoodContext";
 
 function Layout() {
   const { pathname } = useLocation();
@@ -31,10 +32,12 @@ function Layout() {
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/donor" element={<DonorDashboard />} />
-        <Route path="/donor/add" element={<AddFood />} />
-        <Route path="/ngo" element={<NearbyFood />} />
-        <Route path="/ngo/pickups" element={<MyPickups />} />
+
+        <Route path="/donor" element={<ProtectedRoute role="donor"><DonorDashboard /></ProtectedRoute>} />
+        <Route path="/donor/add" element={<ProtectedRoute role="donor"><AddFood /></ProtectedRoute>} />
+
+        <Route path="/ngo" element={<ProtectedRoute role="ngo"><NearbyFood /></ProtectedRoute>} />
+        <Route path="/ngo/pickups" element={<ProtectedRoute role="ngo"><MyPickups /></ProtectedRoute>} />
       </Routes>
       {!hideChrome && <Footer />}
     </>
@@ -58,9 +61,9 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <FoodProvider>
+      <AuthProvider>
         <Layout />
-      </FoodProvider>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

@@ -1,14 +1,18 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Mail, Lock } from "lucide-react";
 import AuthLayout from "../components/auth/AuthLayout";
 import Input from "../components/common/Input";
 import Button from "../components/common/Button";
+import { useAuth, homeFor } from "../context/AuthContext";
+import { getError } from "../services/api";
 
 export default function Login() {
+    const { login } = useAuth();
+    const navigate = useNavigate();
     const [form, setForm] = useState({ email: "", password: "" });
     const [errors, setErrors] = useState({});
-    const [success, setSuccess] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
@@ -22,13 +26,20 @@ export default function Login() {
         return err;
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         const err = validate();
         setErrors(err);
-        if (Object.keys(err).length === 0) {
-            setSuccess(true); // backend baad me judega
-            console.log("Login data:", form);
+        if (Object.keys(err).length > 0) return;
+
+        setLoading(true);
+        try {
+            const user = await login(form.email, form.password);
+            navigate(homeFor(user.role), { replace: true });
+        } catch (error) {
+            setErrors({ password: getError(error) });
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -40,13 +51,9 @@ export default function Login() {
                 <Input label="Password" icon={Lock} type="password" name="password" placeholder="••••••••"
                     value={form.password} onChange={handleChange} error={errors.password} />
 
-                <Button type="submit" className="w-full py-3">Login karo</Button>
-
-                {success && (
-                    <p className="rounded-xl bg-mint p-3 text-center text-sm font-medium text-sage-dark">
-                        Validation pass ho gaya. Backend jodne ke baad asli login chalega.
-                    </p>
-                )}
+                <Button type="submit" disabled={loading} className="w-full py-3">
+                    {loading ? "Ruko..." : "Login karo"}
+                </Button>
             </form>
 
             <p className="mt-6 text-center text-sm text-muted">

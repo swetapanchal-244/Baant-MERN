@@ -9,8 +9,18 @@ import ImageUpload from "../../components/food/ImageUpload";
 import QuantityStepper from "../../components/food/QuantityStepper";
 import useGeolocation from "../../hooks/useGeolocation";
 import { addHours, toLocalInput } from "../../utils/formatTime";
+import { createFood } from "../../services/foodService";
+import { getError } from "../../services/api";
 
 const chips = [1, 2, 4, 6];
+
+const toBase64 = (file) =>
+    new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
 
 export default function AddFood() {
     const [form, setForm] = useState({ title: "", description: "", address: "", expiryTime: "" });
@@ -19,6 +29,8 @@ export default function AddFood() {
     const [preview, setPreview] = useState("");
     const [errors, setErrors] = useState({});
     const [success, setSuccess] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const [apiError, setApiError] = useState("");
     const { coords, loading, error: geoError, detect } = useGeolocation();
 
     const handleChange = (e) => {
@@ -54,20 +66,37 @@ export default function AddFood() {
         return err;
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         const err = validate();
         setErrors(err);
-        if (Object.keys(err).length === 0) {
-            console.log("Food post:", { ...form, quantity, coords, image });
-            setSuccess(true); // backend baad me judega
+        if (Object.keys(err).length > 0) return;
+
+        setSubmitting(true);
+        setApiError("");
+        try {
+            await createFood({
+                title: form.title,
+                description: form.description,
+                image: await toBase64(image),
+                quantity,
+                expiryTime: new Date(form.expiryTime).toISOString(),
+                address: form.address,
+                lat: coords.lat,
+                lng: coords.lng,
+            });
+            setSuccess(true);
+        } catch (error) {
+            setApiError(getError(error));
+        } finally {
+            setSubmitting(false);
         }
     };
 
     return (
         <DashboardLayout>
             <h1 className="text-3xl font-extrabold">Naya khana post karo</h1>
-            <p className="mb-8 mt-1 text-muted">Bas 30 second, aur aaspaas ke NGO ko alert chala jayega.</p>
+            <p className="mb-8 mt-1 text-muted">Bas 30 second, aur aaspaas ke NGO ko khana dikhne lagega.</p>
 
             <AnimatePresence mode="wait">
                 {success ? (
@@ -87,7 +116,7 @@ export default function AddFood() {
                         </motion.span>
                         <h2 className="text-2xl font-extrabold">Post ho gaya!</h2>
                         <p className="mx-auto mb-6 mt-2 max-w-sm text-muted">
-                            Backend judne ke baad yahan se NGO ko live notification jayega.
+                            NGO ko ab ye post dikhne lagi hai.
                         </p>
                         <Link to="/donor"><Button>Dashboard par jao</Button></Link>
                     </motion.div>
@@ -171,7 +200,11 @@ export default function AddFood() {
                             )}
                         </div>
 
-                        <Button type="submit" className="w-full py-3.5 text-base">Khana post karo</Button>
+                        {apiError && <p className="rounded-xl bg-red-50 p-3 text-sm text-red-600">{apiError}</p>}
+
+                        <Button type="submit" disabled={submitting} className="w-full py-3.5 text-base">
+                            {submitting ? "Post ho raha hai..." : "Khana post karo"}
+                        </Button>
                     </motion.form>
                 )}
             </AnimatePresence>
