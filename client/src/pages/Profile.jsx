@@ -23,7 +23,7 @@ export default function Profile() {
         getMe().then((u) => {
             setMe(u);
             setForm({ name: u.name, phone: u.phone, orgName: u.orgName || "" });
-            updateUser(u); // verified status wagairah taaza rahe
+            updateUser(u);
             if (u.role === "donor") {
                 getMyFood().then((list) =>
                     setStats({
@@ -50,7 +50,7 @@ export default function Profile() {
         e.preventDefault();
         const err = {};
         if (form.name.trim().length < 2) err.name = "Naam daalo";
-        if (!/^[6-9]\d{9}$/.test(form.phone)) err.phone = "10 digit ka sahi mobile number daalo";
+        if (form.phone && !/^[6-9]\d{9}$/.test(form.phone)) err.phone = "10 digit ka sahi mobile number daalo";
         if (me.role === "ngo" && form.orgName.trim().length < 2) err.orgName = "NGO ka naam daalo";
         setErrors(err);
         if (Object.keys(err).length) return;
@@ -145,14 +145,16 @@ export default function Profile() {
                 <Button type="submit" disabled={saving}>{saving ? "Save ho raha hai..." : "Save karo"}</Button>
             </form>
 
-            <form onSubmit={savePassword} className="space-y-5 rounded-3xl border border-sand bg-white p-6">
-                <h3 className="text-lg font-bold">Password badlo</h3>
-                <Input label="Purana password" icon={Lock} type="password" value={pw.currentPassword}
-                    onChange={(e) => setPw({ ...pw, currentPassword: e.target.value })} error={errors.currentPassword} />
-                <Input label="Naya password" icon={Lock} type="password" value={pw.newPassword}
-                    onChange={(e) => setPw({ ...pw, newPassword: e.target.value })} error={errors.newPassword} />
-                <Button type="submit" variant="outline">Password badlo</Button>
-            </form>
+            {!me.isGoogleUser && (
+                <form onSubmit={savePassword} className="space-y-5 rounded-3xl border border-sand bg-white p-6">
+                    <h3 className="text-lg font-bold">Password badlo</h3>
+                    <Input label="Purana password" icon={Lock} type="password" value={pw.currentPassword}
+                        onChange={(e) => setPw({ ...pw, currentPassword: e.target.value })} error={errors.currentPassword} />
+                    <Input label="Naya password" icon={Lock} type="password" value={pw.newPassword}
+                        onChange={(e) => setPw({ ...pw, newPassword: e.target.value })} error={errors.newPassword} />
+                    <Button type="submit" variant="outline">Password badlo</Button>
+                </form>
+            )}
         </DashboardLayout>
     );
 }

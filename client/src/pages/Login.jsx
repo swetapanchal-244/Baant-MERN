@@ -6,13 +6,23 @@ import Input from "../components/common/Input";
 import Button from "../components/common/Button";
 import { useAuth, homeFor } from "../context/AuthContext";
 import { getError } from "../services/api";
+import { GoogleLogin } from "@react-oauth/google";
 
 export default function Login() {
-    const { login } = useAuth();
+    const { login, googleLogin } = useAuth();
     const navigate = useNavigate();
     const [form, setForm] = useState({ email: "", password: "" });
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
+
+    const onGoogle = async (res) => {
+        try {
+            const user = await googleLogin(res.credential);
+            navigate(homeFor(user.role), { replace: true });
+        } catch (error) {
+            setErrors({ password: getError(error) });
+        }
+    };
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
@@ -55,6 +65,13 @@ export default function Login() {
                     {loading ? "Ruko..." : "Login karo"}
                 </Button>
             </form>
+
+            <div className="my-5 flex items-center gap-3 text-xs text-muted">
+                <span className="h-px flex-1 bg-sand" /> ya <span className="h-px flex-1 bg-sand" />
+            </div>
+            <div className="flex justify-center">
+                <GoogleLogin onSuccess={onGoogle} onError={() => setErrors({ password: "Google login fail ho gaya" })} />
+            </div>
 
             <p className="mt-6 text-center text-sm text-muted">
                 Naye ho?{" "}

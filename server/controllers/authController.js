@@ -1,5 +1,50 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const { OAuth2Client } = require("google-auth-library");
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+exports.googleAuth = async (req, res) => {
+    try {
+        const { credential, role, orgName } = req.body;
+
+        const ticket = await googleClient.verifyIdToken({
+            idToken: credential,
+            audience: process.env.GOOGLE_CLIENT_ID,
+        });
+        const { email, name, sub, email_verified } = ticket.getPayload();
+        if (!email_verified) {
+            return res.status(400).json({ message: "Google email verify nahi hai" });
+        }
+
+        let user = await User.findOne({ email: email.toLowerCase() });
+
+        if (!user) {
+
+            if (!["donor", "ngo"].includes(role)) {
+                return res.status(404).json({ message: "Account nahi mila. Pehle Register karo." });
+            }
+            if (role === "ngo" && !orgName) {
+                return res.status(400).json({ message: "NGO ka naam zaroori hai" });
+            }
+            user = await User.create({
+                name,
+                email,
+                googleId: sub,
+                role,
+                orgName: role === "ngo" ? orgName : undefined,
+            });
+            return sendAuth(res, user, 201);
+        }
+
+        if (!user.googleId) {
+            user.googleId = sub;
+            await user.save();
+        }
+        sendAuth(res, user);
+    } catch (err) {
+        res.status(401).json({ message: "Google login fail ho gaya" });
+    }
+};
 
 const signToken = (id) =>
     jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "7d" });
@@ -13,6 +58,7 @@ const publicUser = (u) => ({
     orgName: u.orgName,
     isVerified: u.isVerified,
     createdAt: u.createdAt,
+    isGoogleUser: !!u.googleId,
 });
 
 const sendAuth = (res, user, status = 200) => {
@@ -94,7 +140,7 @@ exports.changePassword = async (req, res) => {
         if (!(await user.matchPassword(currentPassword))) {
             return res.status(400).json({ message: "Purana password galat hai" });
         }
-        user.password = newPassword; 
+        user.password = newPassword;
         await user.save();
         res.json({ message: "Password badal gaya" });
     } catch (err) {

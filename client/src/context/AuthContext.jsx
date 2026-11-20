@@ -27,6 +27,9 @@ export function AuthProvider({ children }) {
     const login = async (email, password) =>
         startSession((await api.post("/auth/login", { email, password })).data);
 
+    const googleLogin = async (credential, role, orgName) =>
+        startSession((await api.post("/auth/google", { credential, role, orgName })).data);
+
     const logout = () => {
         localStorage.removeItem("baant_token");
         localStorage.removeItem("baant_user");
@@ -38,7 +41,7 @@ export function AuthProvider({ children }) {
         setUser(u);
     };
 
-    return <AuthContext.Provider value={{ user, register, login, logout, updateUser }}>{children}</AuthContext.Provider>;
+    return <AuthContext.Provider value={{ user, register, login, googleLogin, logout, updateUser }}>{children}</AuthContext.Provider>;
 }
 
 export const useAuth = () => useContext(AuthContext);

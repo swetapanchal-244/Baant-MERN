@@ -5,8 +5,9 @@ const userSchema = new mongoose.Schema(
     {
         name: { type: String, required: true, trim: true },
         email: { type: String, required: true, unique: true, lowercase: true, trim: true },
-        password: { type: String, required: true, minlength: 6, select: false },
-        phone: { type: String, required: true },
+        password: { type: String, minlength: 6, select: false },
+        phone: { type: String },
+        googleId: { type: String },
         role: { type: String, enum: ["donor", "ngo", "admin"], default: "donor" },
         orgName: { type: String, trim: true },
         isVerified: { type: Boolean, default: false },
@@ -20,6 +21,7 @@ userSchema.pre("save", async function () {
 });
 
 userSchema.methods.matchPassword = function (plain) {
+    if (!this.password) return false;
     return bcrypt.compare(plain, this.password);
 };
 
