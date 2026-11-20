@@ -49,7 +49,7 @@ export default function NearbyFood() {
             }
         },
         "food:updated": (raw) => {
-           
+
             if (raw.status !== "available") {
                 setFoods((prev) => prev.filter((f) => f.id !== raw._id));
             }
@@ -62,7 +62,7 @@ export default function NearbyFood() {
             navigate("/ngo/pickups");
         } catch (e) {
             setError(getError(e));
-            setFoods((prev) => prev.filter((f) => f.id !== id));
+            if (e.response?.status === 409) setFoods((prev) => prev.filter((f) => f.id !== id));
         }
     };
 

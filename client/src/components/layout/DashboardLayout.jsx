@@ -1,16 +1,22 @@
 import { NavLink, Link, useNavigate } from "react-router-dom";
-import { HeartHandshake, LayoutDashboard, PlusCircle, LogOut, MapPin, Truck } from "lucide-react";
+import { HeartHandshake, LayoutDashboard, PlusCircle, LogOut, MapPin, Truck, User, Users, ShieldCheck } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
 const donorLinks = [
     { to: "/donor", label: "Dashboard", icon: LayoutDashboard, end: true },
     { to: "/donor/add", label: "Naya khana", icon: PlusCircle },
+    { to: "/profile", label: "Profile", icon: User },
 ];
 
 const ngoLinks = [
     { to: "/ngo", label: "Nearby khana", icon: MapPin, end: true },
     { to: "/ngo/pickups", label: "Meri pickups", icon: Truck },
+    { to: "/profile", label: "Profile", icon: User }
 ];
+
+const adminLinks = [
+    { to: "/admin", label: "Admin Panel", icon: ShieldCheck, end: true },
+]
 
 const linkClass = ({ isActive }) =>
     `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition ${isActive ? "bg-mint text-sage-dark" : "text-muted hover:bg-cream hover:text-ink"
@@ -19,7 +25,7 @@ const linkClass = ({ isActive }) =>
 export default function DashboardLayout({ children, wide = false }) {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
-    const links = user?.role === "ngo" ? ngoLinks : donorLinks;
+    const links = user?.role === "admin" ? adminLinks : user?.role === "ngo" ? ngoLinks : donorLinks;
 
     const handleLogout = () => {
         logout();

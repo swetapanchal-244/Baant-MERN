@@ -19,6 +19,7 @@ app.get("/", (req, res) => res.send("Baant API running"));
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/food", require("./routes/foodRoutes"));
 app.use("/api/stats", require("./routes/statsRoutes"));
+app.use("/api/admin", require("./routes/adminRoutes"));
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server on port ${PORT}`));

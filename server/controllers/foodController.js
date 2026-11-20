@@ -61,6 +61,11 @@ exports.myPickups = async (req, res) => {
 };
 
 exports.acceptFood = async (req, res) => {
+    if (!req.user.isVerified) {
+        return res.status(403).json({
+            message: "Aapka NGO abhi verify nahi hua. Admin verify karega tab khana accept kar sakte hain.",
+        });
+    }
     const food = await Food.findOneAndUpdate(
         { _id: req.params.id, status: "available", expiryTime: { $gt: new Date() } },
         { status: "accepted", acceptedBy: req.user._id },
