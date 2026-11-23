@@ -9,6 +9,7 @@ const { initSocket } = require("./socket");
 const startExpireJob = require("./jobs/expireFood");
 
 const app = express();
+app.set("trust proxy", 1);
 const server = http.createServer(app);
 connectDB();
 startExpireJob();
