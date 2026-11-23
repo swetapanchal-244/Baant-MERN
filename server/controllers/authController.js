@@ -3,48 +3,7 @@ const User = require("../models/User");
 const { OAuth2Client } = require("google-auth-library");
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-exports.googleAuth = async (req, res) => {
-    try {
-        const { credential, role, orgName } = req.body;
-
-        const ticket = await googleClient.verifyIdToken({
-            idToken: credential,
-            audience: process.env.GOOGLE_CLIENT_ID,
-        });
-        const { email, name, sub, email_verified } = ticket.getPayload();
-        if (!email_verified) {
-            return res.status(400).json({ message: "Google email verify nahi hai" });
-        }
-
-        let user = await User.findOne({ email: email.toLowerCase() });
-
-        if (!user) {
-
-            if (!["donor", "ngo"].includes(role)) {
-                return res.status(404).json({ message: "Account nahi mila. Pehle Register karo." });
-            }
-            if (role === "ngo" && !orgName) {
-                return res.status(400).json({ message: "NGO ka naam zaroori hai" });
-            }
-            user = await User.create({
-                name,
-                email,
-                googleId: sub,
-                role,
-                orgName: role === "ngo" ? orgName : undefined,
-            });
-            return sendAuth(res, user, 201);
-        }
-
-        if (!user.googleId) {
-            user.googleId = sub;
-            await user.save();
-        }
-        sendAuth(res, user);
-    } catch (err) {
-        res.status(401).json({ message: "Google login fail ho gaya" });
-    }
-};
+const cleanEmail = (email) => (typeof email === "string" ? email.trim().toLowerCase() : "");
 
 const signToken = (id) =>
     jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "7d" });
@@ -76,9 +35,53 @@ const sendAuth = (res, user, status = 200) => {
     });
 };
 
+exports.googleAuth = async (req, res) => {
+    try {
+        const { credential, role, orgName } = req.body;
+
+        const ticket = await googleClient.verifyIdToken({
+            idToken: credential,
+            audience: process.env.GOOGLE_CLIENT_ID,
+        });
+        const { email, name, sub, email_verified } = ticket.getPayload();
+        if (!email_verified) {
+            return res.status(400).json({ message: "Google email verify nahi hai" });
+        }
+
+        let user = await User.findOne({ email: cleanEmail(email) });
+
+        if (!user) {
+            if (!["donor", "ngo"].includes(role)) {
+                return res.status(404).json({ message: "Account nahi mila. Pehle Register karo." });
+            }
+            if (role === "ngo" && !orgName) {
+                return res.status(400).json({ message: "NGO ka naam zaroori hai" });
+            }
+            user = await User.create({
+                name,
+                email: cleanEmail(email),
+                googleId: sub,
+                role,
+                orgName: role === "ngo" ? orgName : undefined,
+            });
+            return sendAuth(res, user, 201);
+        }
+
+        if (!user.googleId) {
+            user.googleId = sub;
+            await user.save();
+        }
+        sendAuth(res, user);
+    } catch (err) {
+        console.log("GOOGLE AUTH ERROR:", err.message);
+        res.status(401).json({ message: "Google login fail ho gaya" });
+    }
+};
+
 exports.register = async (req, res) => {
     try {
-        const { name, email, password, phone, role, orgName } = req.body;
+        const { name, password, phone, role, orgName } = req.body;
+        const email = cleanEmail(req.body.email);
 
         if (!["donor", "ngo"].includes(role)) {
             return res.status(400).json({ message: "Role donor ya ngo hona chahiye" });
@@ -86,26 +89,48 @@ exports.register = async (req, res) => {
         if (role === "ngo" && !orgName) {
             return res.status(400).json({ message: "NGO ka naam zaroori hai" });
         }
-        if (await User.findOne({ email: email?.toLowerCase() })) {
+        if (await User.findOne({ email })) {
             return res.status(400).json({ message: "Ye email pehle se registered hai" });
         }
 
         const user = await User.create({ name, email, password, phone, role, orgName });
+
+        // TEMP DEBUG (baad me hata dena)
+        console.log("REGISTER OK:", email, "| password length:", password?.length);
+
         sendAuth(res, user, 201);
     } catch (err) {
+        console.log("REGISTER ERROR:", err.message);
         res.status(400).json({ message: err.message });
     }
 };
 
 exports.login = async (req, res) => {
     try {
-        const { email, password } = req.body;
-        const user = await User.findOne({ email: email?.toLowerCase() }).select("+password");
-        if (!user || !(await user.matchPassword(password))) {
+        const { password } = req.body;
+        const email = cleanEmail(req.body.email);
+
+        const user = await User.findOne({ email }).select("+password");
+
+        // TEMP DEBUG (baad me hata dena)
+        console.log("LOGIN TRY:", email, "| user mila:", !!user, "| password saved:", !!user?.password, "| password length:", password?.length);
+
+        if (!user) {
+            return res.status(401).json({ message: "Email ya password galat hai" });
+        }
+        if (!user.password && user.googleId) {
+            return res.status(401).json({ message: "Ye account Google se bana hai. Google se login karo." });
+        }
+
+        const ok = await user.matchPassword(password);
+        console.log("LOGIN password match:", ok); // TEMP DEBUG
+
+        if (!ok) {
             return res.status(401).json({ message: "Email ya password galat hai" });
         }
         sendAuth(res, user);
     } catch (err) {
+        console.log("LOGIN ERROR:", err.message);
         res.status(500).json({ message: err.message });
     }
 };
