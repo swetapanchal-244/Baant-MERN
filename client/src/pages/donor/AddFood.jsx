@@ -14,12 +14,20 @@ import { getError } from "../../services/api";
 
 const chips = [1, 2, 4, 6];
 
-const toBase64 = (file) =>
+const compress = (file, max = 800, quality = 0.7) =>
     new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
+        const img = new Image();
+        img.onload = () => {
+            const scale = Math.min(1, max / Math.max(img.width, img.height));
+            const c = document.createElement("canvas");
+            c.width = img.width * scale;
+            c.height = img.height * scale;
+            c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+            URL.revokeObjectURL(img.src);
+            resolve(c.toDataURL("image/jpeg", quality));
+        };
+        img.onerror = reject;
+        img.src = URL.createObjectURL(file);
     });
 
 export default function AddFood() {
@@ -78,7 +86,7 @@ export default function AddFood() {
             await createFood({
                 title: form.title,
                 description: form.description,
-                image: await toBase64(image),
+                image: await compress(image),
                 quantity,
                 expiryTime: new Date(form.expiryTime).toISOString(),
                 address: form.address,

@@ -1,0 +1,1 @@
+export const NGO_CENTER = { lat: 28.6139, lng: 77.209 };

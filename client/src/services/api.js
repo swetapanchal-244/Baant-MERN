@@ -12,7 +12,7 @@ api.interceptors.response.use(
     (res) => res,
     (err) => {
         const url = err.config?.url || "";
-        const isAuthCall = url.includes("/auth/login") || url.includes("/auth/register");
+        const isAuthCall = ["/auth/login", "/auth/register", "/auth/google"].some((p) => url.includes(p));
         if (err.response?.status === 401 && !isAuthCall) {
             localStorage.removeItem("baant_token");
             localStorage.removeItem("baant_user");

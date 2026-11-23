@@ -8,7 +8,7 @@ import Button from "../../components/common/Button";
 import useGeolocation from "../../hooks/useGeolocation";
 import { getNearby, acceptFood } from "../../services/foodService";
 import { getError } from "../../services/api";
-import { NGO_CENTER } from "../../data/mockNearby";
+import { NGO_CENTER } from "../../utils/constants";
 import { distanceKm } from "../../utils/distance";
 import toast from "react-hot-toast";
 import useSocket from "../../hooks/useSocket";
@@ -16,7 +16,7 @@ import { normalize } from "../../services/foodService";
 
 export default function NearbyFood() {
     const navigate = useNavigate();
-    const { coords, detect } = useGeolocation();
+    const { coords, detect, error: geoError } = useGeolocation();
     const [radius, setRadius] = useState(5);
     const [foods, setFoods] = useState([]);
     const [selected, setSelected] = useState(null);
@@ -85,6 +85,12 @@ export default function NearbyFood() {
                         onChange={(e) => setRadius(Number(e.target.value))} className="w-full accent-sage" />
                 </div>
             </div>
+
+            {geoError && (
+                <p className="mb-4 rounded-xl bg-peach-soft p-3 text-sm text-peach">
+                    Aapki location nahi mili, isliye abhi Delhi ka default map dikh raha hai. Browser me Location allow karke page refresh karo.
+                </p>
+            )}
 
             {error && <p className="mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-600">{error}</p>}
 

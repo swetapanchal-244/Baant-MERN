@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { MapPin, Users, PackageOpen } from "lucide-react";
+import { MapPin, Users, PackageOpen, Phone, Navigation } from "lucide-react";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import StatusTimeline from "../../components/food/StatusTimeline";
 import Button from "../../components/common/Button";
@@ -54,7 +54,7 @@ export default function MyPickups() {
                     </div>
                 </div>
             )}
-            
+
             {error && <p className="mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-600">{error}</p>}
 
             {mine.length === 0 ? (
@@ -85,6 +85,25 @@ export default function MyPickups() {
                                             <span className="flex items-center gap-1"><MapPin size={13} /> {f.address}</span>
                                         </div>
                                     </div>
+                                </div>
+
+                                <div className="mb-5 flex flex-wrap gap-3">
+                                    {f.donorPhone && (
+                                        <a
+                                            href={`tel:${f.donorPhone}`}
+                                            className="flex items-center gap-2 rounded-full bg-mint px-4 py-2 text-sm font-semibold text-sage-dark transition hover:bg-sage hover:text-white"
+                                        >
+                                            <Phone size={15} /> Donor ko call karo
+                                        </a>
+                                    )}
+                                    <a
+                                        href={`https://www.google.com/maps/dir/?api=1&destination=${f.lat},${f.lng}`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="flex items-center gap-2 rounded-full bg-peach-soft px-4 py-2 text-sm font-semibold text-peach transition hover:bg-peach hover:text-white"
+                                    >
+                                        <Navigation size={15} /> Directions
+                                    </a>
                                 </div>
 
                                 <StatusTimeline status={f.status} />

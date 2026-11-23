@@ -1,6 +1,14 @@
 const Food = require("../models/Food");
 const { getIO } = require("../socket");
 
+const emitUpdate = (full) => {
+    const pub = full.toObject();
+    if (pub.donor) delete pub.donor.phone;
+    delete pub.acceptedBy;
+    getIO().to("role:ngo").emit("food:updated", pub);
+    getIO().to(`user:${full.donor._id}`).emit("food:updated", full);
+};
+
 exports.createFood = async (req, res) => {
     try {
         const { title, description, image, quantity, expiryTime, address, lat, lng } = req.body;
@@ -38,6 +46,9 @@ exports.myFood = async (req, res) => {
 exports.nearbyFood = async (req, res) => {
     const { lat, lng, radius = 5 } = req.query;
     if (!lat || !lng) return res.status(400).json({ message: "lat aur lng do" });
+    if ([lat, lng, radius].some((v) => Number.isNaN(Number(v)))) {
+        return res.status(400).json({ message: "lat, lng aur radius number hone chahiye" });
+    }
 
     const foods = await Food.find({
         status: "available",
@@ -78,7 +89,7 @@ exports.acceptFood = async (req, res) => {
         { path: "donor", select: "name phone" },
         { path: "acceptedBy", select: "orgName name" },
     ]);
-    getIO().to("role:ngo").to(`user:${food.donor._id}`).emit("food:updated", full);
+    emitUpdate(full);
     res.json(food);
 };
 
@@ -98,6 +109,6 @@ exports.updateStatus = async (req, res) => {
         { path: "donor", select: "name phone" },
         { path: "acceptedBy", select: "orgName name" },
     ]);
-    getIO().to("role:ngo").to(`user:${food.donor._id}`).emit("food:updated", full);
+    emitUpdate(full);
     res.json(food);
 };

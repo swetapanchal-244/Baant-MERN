@@ -3,9 +3,11 @@ import { Link } from "react-router-dom";
 import { motion, useScroll, useSpring } from "framer-motion";
 import { HeartHandshake } from "lucide-react";
 import Button from "../common/Button";
+import { useAuth, homeFor } from "../../context/AuthContext";
 
 export default function Navbar() {
     const [scrolled, setScrolled] = useState(false);
+    const { user } = useAuth();
     const { scrollYProgress } = useScroll();
     const progress = useSpring(scrollYProgress, { stiffness: 120, damping: 25 });
 
@@ -41,8 +43,14 @@ export default function Navbar() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <Link to="/login"><Button variant="outline">Login</Button></Link>
-                    <Link to="/register" className="hidden sm:block"><Button>Join karo</Button></Link>
+                    {user ? (
+                        <Link to={homeFor(user.role)}><Button>Dashboard</Button></Link>
+                    ) : (
+                        <>
+                            <Link to="/login"><Button variant="outline">Login</Button></Link>
+                            <Link to="/register" className="hidden sm:block"><Button>Join karo</Button></Link>
+                        </>
+                    )}
                 </div>
             </div>
             <motion.div style={{ scaleX: progress }} className="h-0.5 origin-left bg-linear-to-r from-sage to-peach" />

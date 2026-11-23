@@ -20,6 +20,7 @@ export const normalize = (f) => ({
     lng: f.location.coordinates[0],
     expiry: timeLeft(f.expiryTime),
     donor: f.donor?.name || "Donor",
+    donorPhone: f.donor?.phone || null,
     ngo: f.acceptedBy?.orgName || f.acceptedBy?.name || null,
     time: new Date(f.createdAt).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }),
 });

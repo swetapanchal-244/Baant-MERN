@@ -22,7 +22,7 @@ export default function Profile() {
     useEffect(() => {
         getMe().then((u) => {
             setMe(u);
-            setForm({ name: u.name, phone: u.phone, orgName: u.orgName || "" });
+            setForm({ name: u.name, phone: u.phone || "", orgName: u.orgName || "" });
             updateUser(u);
             if (u.role === "donor") {
                 getMyFood().then((list) =>
