@@ -3,7 +3,9 @@
 **Khana baanto, khushiyan badhao.**
 Baant ek real-time food donation platform hai jo bacha hua khana (shadi, hostel mess, ghar, canteen) aaspaas ke verified NGOs tak pahunchata hai.
 
-> Live demo: _deploy ke baad link yahan daalna_
+> **Live demo:** [https://baant-mern.vercel.app](https://baant-mern.vercel.app)
+>
+> Backend free tier par hai, isliye pehli baar kholne par 30-50 second lag sakte hain.
 
 ## Problem
 
